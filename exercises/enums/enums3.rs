@@ -48,6 +48,7 @@ impl State {
             Message::Echo(s) => self.echo(s),
             Message::Move(p) => self.move_position(p),
             Message::Quit => self.quit(),
+         }
         // variants
         // Remember: When passing a tuple as a function argument, you'll need
         // extra parentheses: fn function((t, u, p, l, e))
