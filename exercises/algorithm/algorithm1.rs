@@ -69,15 +69,45 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+	    // 把头部节点摘下来，取出它的值（节点本身回收掉）
+    fn take_front(&mut self) -> Option<T> {
+        let head = self.start?;
+        unsafe {
+            let next = (*head.as_ptr()).next;
+            let boxed = Box::from_raw(head.as_ptr());
+            self.start = next;
+            if next.is_none() {
+                self.end = None;
+            }
+            self.length -= 1;
+            Some(boxed.val)
         }
-	}
+    }
+
+    pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
+    where
+        T: Ord,
+    {
+        let mut merged = LinkedList::new();
+        loop {
+            let take_from_a = match (&list_a.start, &list_b.start) {
+                (None, None) => break,
+                (Some(_), None) => true,
+                (None, Some(_)) => false,
+                (Some(a), Some(b)) => unsafe { (*a.as_ptr()).val <= (*b.as_ptr()).val },
+            };
+
+            let next_val = if take_from_a {
+                list_a.take_front()
+            } else {
+                list_b.take_front()
+            };
+            if let Some(v) = next_val {
+                merged.add(v);
+            }
+        }
+        merged
+    }
 }
 
 impl<T> Display for LinkedList<T>
